@@ -12,7 +12,8 @@ Local **Apache Airflow 3** stack (Docker Compose) for development and learningâ€
 4. [Project layout](#project-layout)  
 5. [Shared data folder](#shared-data-folder)  
 6. [DAG manifest export](#dag-manifest-export)  
-7. [Configuration notes](#configuration-notes)
+7. [Manifest YAML reference](docs/MANIFEST.md) (file structure and how to read it)  
+8. [Configuration notes](#configuration-notes)
 
 ---
 
@@ -70,6 +71,7 @@ docker compose down
 | `config/airflow.cfg` | Custom Airflow configuration. |
 | `scripts/dag_a_manifest.py` | Manifest exporter CLI. |
 | `dag_manifests/` | Generated YAML exports + `index.yaml`. |
+| `docs/MANIFEST.md` | Describes manifest YAML structure and how to read each section. |
 
 ---
 
@@ -85,6 +87,8 @@ docker compose down
 ---
 
 ## DAG manifest export
+
+For **what each field means** (`global_topological_order`, `execution_order`, `tasks`, `index.yaml`, etc.), see **[docs/MANIFEST.md](docs/MANIFEST.md)**.
 
 Run the script **inside the scheduler container** (the `scripts/` directory is not mounted by default, so pipe the file in).
 
