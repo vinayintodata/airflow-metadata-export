@@ -1,0 +1,901 @@
+manifest:
+  dag_id: dag_b
+  format_version: 1
+  kind: airflow_dag_manifest
+  warnings: null
+dag:
+  dag_id: dag_b
+  fileloc: /opt/airflow/dags/dag_b.py
+  schedule: '@daily'
+  tags:
+  - demo
+  - dependency
+  catchup: false
+  start_date: '2025-01-01T00:00:00+00:00'
+global_topological_order:
+- start
+- stage_1.s1_1
+- stage_1.s1_2
+- stage_1.s1_3
+- stage_1.s1_4
+- stage_2.s2_1
+- stage_2.s2_2
+- stage_2.s2_3
+- stage_2.s2_4
+- stage_2.s2_5
+- stage_3.s3_1
+- stage_3.s3_2
+- stage_3.s3_3
+- b_complete
+global_execution_waves:
+- wave: 0
+  parallel_tasks:
+  - start
+- wave: 1
+  parallel_tasks:
+  - stage_1.s1_1
+- wave: 2
+  parallel_tasks:
+  - stage_1.s1_2
+  - stage_1.s1_3
+- wave: 3
+  parallel_tasks:
+  - stage_1.s1_4
+- wave: 4
+  parallel_tasks:
+  - stage_2.s2_1
+- wave: 5
+  parallel_tasks:
+  - stage_2.s2_2
+  - stage_2.s2_3
+  - stage_2.s2_4
+- wave: 6
+  parallel_tasks:
+  - stage_2.s2_5
+- wave: 7
+  parallel_tasks:
+  - stage_3.s3_1
+- wave: 8
+  parallel_tasks:
+  - stage_3.s3_2
+  - stage_3.s3_3
+- wave: 9
+  parallel_tasks:
+  - b_complete
+execution_order:
+  description: Segments follow global topological order; a new segment starts when registry_key changes. local_execution_waves use only in-segment dependencies (same wave may run in parallel). For edges between segments see each task under tasks.<task_id>.upstream_task_ids and global_topological_order.
+  segments:
+  - segment_index: 0
+    registry_key: __root__
+    task_group_id: null
+    local_execution_waves:
+    - wave: 0
+      parallel_tasks:
+      - start
+  - segment_index: 1
+    registry_key: stage_1
+    task_group_id: stage_1
+    local_execution_waves:
+    - wave: 0
+      parallel_tasks:
+      - stage_1.s1_1
+    - wave: 1
+      parallel_tasks:
+      - stage_1.s1_2
+      - stage_1.s1_3
+    - wave: 2
+      parallel_tasks:
+      - stage_1.s1_4
+  - segment_index: 2
+    registry_key: stage_2
+    task_group_id: stage_2
+    local_execution_waves:
+    - wave: 0
+      parallel_tasks:
+      - stage_2.s2_1
+    - wave: 1
+      parallel_tasks:
+      - stage_2.s2_2
+      - stage_2.s2_3
+      - stage_2.s2_4
+    - wave: 2
+      parallel_tasks:
+      - stage_2.s2_5
+  - segment_index: 3
+    registry_key: stage_3
+    task_group_id: stage_3
+    local_execution_waves:
+    - wave: 0
+      parallel_tasks:
+      - stage_3.s3_1
+    - wave: 1
+      parallel_tasks:
+      - stage_3.s3_2
+      - stage_3.s3_3
+  - segment_index: 4
+    registry_key: __root__
+    task_group_id: null
+    local_execution_waves:
+    - wave: 0
+      parallel_tasks:
+      - b_complete
+tasks:
+  start:
+    task_id: start
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids: []
+    downstream_task_ids:
+    - stage_1.s1_1
+    placement:
+      registry_key: __root__
+      task_group: null
+      local_task_id: start
+      task_group_path: []
+      parent_task_group: null
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_1.s1_1:
+    task_id: stage_1.s1_1
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - start
+    downstream_task_ids:
+    - stage_1.s1_2
+    - stage_1.s1_3
+    placement:
+      registry_key: stage_1
+      task_group: stage_1
+      local_task_id: s1_1
+      task_group_path:
+      - stage_1
+      parent_task_group: null
+    task_group_path:
+    - stage_1
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_1.s1_2:
+    task_id: stage_1.s1_2
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_1.s1_1
+    downstream_task_ids:
+    - stage_1.s1_4
+    placement:
+      registry_key: stage_1
+      task_group: stage_1
+      local_task_id: s1_2
+      task_group_path:
+      - stage_1
+      parent_task_group: null
+    task_group_path:
+    - stage_1
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_1.s1_3:
+    task_id: stage_1.s1_3
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_1.s1_1
+    downstream_task_ids:
+    - stage_1.s1_4
+    placement:
+      registry_key: stage_1
+      task_group: stage_1
+      local_task_id: s1_3
+      task_group_path:
+      - stage_1
+      parent_task_group: null
+    task_group_path:
+    - stage_1
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_1.s1_4:
+    task_id: stage_1.s1_4
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_1.s1_2
+    - stage_1.s1_3
+    downstream_task_ids:
+    - stage_2.s2_1
+    placement:
+      registry_key: stage_1
+      task_group: stage_1
+      local_task_id: s1_4
+      task_group_path:
+      - stage_1
+      parent_task_group: null
+    task_group_path:
+    - stage_1
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_2.s2_1:
+    task_id: stage_2.s2_1
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_1.s1_4
+    downstream_task_ids:
+    - stage_2.s2_2
+    - stage_2.s2_3
+    - stage_2.s2_4
+    placement:
+      registry_key: stage_2
+      task_group: stage_2
+      local_task_id: s2_1
+      task_group_path:
+      - stage_2
+      parent_task_group: null
+    task_group_path:
+    - stage_2
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_2.s2_2:
+    task_id: stage_2.s2_2
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_2.s2_1
+    downstream_task_ids:
+    - stage_2.s2_5
+    placement:
+      registry_key: stage_2
+      task_group: stage_2
+      local_task_id: s2_2
+      task_group_path:
+      - stage_2
+      parent_task_group: null
+    task_group_path:
+    - stage_2
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_2.s2_3:
+    task_id: stage_2.s2_3
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_2.s2_1
+    downstream_task_ids:
+    - stage_2.s2_5
+    placement:
+      registry_key: stage_2
+      task_group: stage_2
+      local_task_id: s2_3
+      task_group_path:
+      - stage_2
+      parent_task_group: null
+    task_group_path:
+    - stage_2
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_2.s2_4:
+    task_id: stage_2.s2_4
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_2.s2_1
+    downstream_task_ids:
+    - stage_2.s2_5
+    placement:
+      registry_key: stage_2
+      task_group: stage_2
+      local_task_id: s2_4
+      task_group_path:
+      - stage_2
+      parent_task_group: null
+    task_group_path:
+    - stage_2
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_2.s2_5:
+    task_id: stage_2.s2_5
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_2.s2_2
+    - stage_2.s2_3
+    - stage_2.s2_4
+    downstream_task_ids:
+    - stage_3.s3_1
+    placement:
+      registry_key: stage_2
+      task_group: stage_2
+      local_task_id: s2_5
+      task_group_path:
+      - stage_2
+      parent_task_group: null
+    task_group_path:
+    - stage_2
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_3.s3_1:
+    task_id: stage_3.s3_1
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_2.s2_5
+    downstream_task_ids:
+    - stage_3.s3_2
+    - stage_3.s3_3
+    placement:
+      registry_key: stage_3
+      task_group: stage_3
+      local_task_id: s3_1
+      task_group_path:
+      - stage_3
+      parent_task_group: null
+    task_group_path:
+    - stage_3
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_3.s3_2:
+    task_id: stage_3.s3_2
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_3.s3_1
+    downstream_task_ids:
+    - b_complete
+    placement:
+      registry_key: stage_3
+      task_group: stage_3
+      local_task_id: s3_2
+      task_group_path:
+      - stage_3
+      parent_task_group: null
+    task_group_path:
+    - stage_3
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  stage_3.s3_3:
+    task_id: stage_3.s3_3
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_3.s3_1
+    downstream_task_ids:
+    - b_complete
+    placement:
+      registry_key: stage_3
+      task_group: stage_3
+      local_task_id: s3_3
+      task_group_path:
+      - stage_3
+      parent_task_group: null
+    task_group_path:
+    - stage_3
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+  b_complete:
+    task_id: b_complete
+    task_type: EmptyOperator
+    operator_class: airflow.providers.standard.operators.empty.EmptyOperator
+    trigger_rule: all_success
+    weight_rule: downstream
+    upstream_task_ids:
+    - stage_3.s3_2
+    - stage_3.s3_3
+    downstream_task_ids: []
+    placement:
+      registry_key: __root__
+      task_group: null
+      local_task_id: b_complete
+      task_group_path: []
+      parent_task_group: null
+    allow_nested_operators: true
+    depends_on_past: false
+    do_xcom_push: true
+    email_on_failure: true
+    email_on_retry: true
+    executor_config: {}
+    has_on_execute_callback: false
+    has_on_failure_callback: false
+    has_on_retry_callback: false
+    has_on_skipped_callback: false
+    has_on_success_callback: false
+    ignore_first_depends_on_past: false
+    inlets: []
+    is_setup: false
+    is_teardown: false
+    multiple_outputs: false
+    on_failure_fail_dagrun: false
+    outlets: []
+    owner: airflow
+    params: {}
+    pool: default_pool
+    pool_slots: 1
+    priority_weight: 1
+    queue: default
+    retries: 0
+    retry_delay: 0:05:00
+    retry_exponential_backoff: 0
+    start_date: '2025-01-01T00:00:00+00:00'
+    start_from_trigger: false
+    template_ext: []
+    template_fields: []
+    template_fields_renderers: {}
+    ui_color: '#e8f7e4'
+    ui_fgcolor: '#000'
+    wait_for_downstream: false
+    wait_for_past_depends_before_skipping: false
+cross_dag_edges_from_this_dag: []
+airflow_cli_dag_row:
+  dag_id: dag_b
+  fileloc: /opt/airflow/dags/dag_b.py
+  owners:
+  - airflow
+  is_paused: 'False'
+  bundle_name: dags-folder
+  bundle_version: null

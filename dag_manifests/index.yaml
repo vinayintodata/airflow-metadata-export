@@ -1,0 +1,78 @@
+manifest:
+  format_version: 1
+  kind: airflow_manifest_index
+export:
+  output_dir: /tmp/dag_manifests
+  dag_ids:
+  - dag_a
+  - dag_b
+  - dag_c
+  files:
+  - /tmp/dag_manifests/dag_a.yaml
+  - /tmp/dag_manifests/dag_b.yaml
+  - /tmp/dag_manifests/dag_c.yaml
+dag_dependencies_across_dags:
+  description: Edges from tasks in one DAG that reference another DAG id (ExternalTaskSensor, TriggerDagRunOperator, etc.).
+  edges:
+  - relation: external_task_sensor_or_marker
+    operator_type: ExternalTaskSensor
+    from_dag_id: dag_c
+    from_task_id: wait_for_dag_a_complete
+    to_dag_id: dag_a
+    to_task_id: a_complete
+    to_task_group_id: null
+  - relation: external_task_sensor_or_marker
+    operator_type: ExternalTaskSensor
+    from_dag_id: dag_c
+    from_task_id: wait_for_dag_b_complete
+    to_dag_id: dag_b
+    to_task_id: b_complete
+    to_task_group_id: null
+airflow_cli:
+  dags_list_json_subset_for_exported_dags:
+  - dag_id: dag_a
+    fileloc: /opt/airflow/dags/dag_a.py
+    owners:
+    - airflow
+    is_paused: 'False'
+    bundle_name: dags-folder
+    bundle_version: null
+  - dag_id: dag_a
+    fileloc: /opt/airflow/dags/dag_a.py
+    owners:
+    - airflow
+    is_paused: 'False'
+    bundle_name: dags-folder
+    bundle_version: null
+  - dag_id: dag_b
+    fileloc: /opt/airflow/dags/dag_b.py
+    owners:
+    - airflow
+    is_paused: 'False'
+    bundle_name: dags-folder
+    bundle_version: null
+  - dag_id: dag_b
+    fileloc: /opt/airflow/dags/dag_b.py
+    owners:
+    - airflow
+    is_paused: 'False'
+    bundle_name: dags-folder
+    bundle_version: null
+  - dag_id: dag_c
+    fileloc: /opt/airflow/dags/dag_c.py
+    owners:
+    - airflow
+    is_paused: 'False'
+    bundle_name: dags-folder
+    bundle_version: null
+  - dag_id: dag_c
+    fileloc: /opt/airflow/dags/dag_c.py
+    owners:
+    - airflow
+    is_paused: 'False'
+    bundle_name: dags-folder
+    bundle_version: null
+  dags_list_json_error: null
+  commands:
+  - airflow dags list -o json
+dagbag_import_errors: null

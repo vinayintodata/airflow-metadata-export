@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+
+# Local env / secrets
+.env
+.env.*
+
+# Airflow runtime logs (Docker bind mount)
+logs/
+
+# Runtime artifact from DAG A
+data/from_a/ready.txt
+
+# Editor
+.idea/
+.vscode/
