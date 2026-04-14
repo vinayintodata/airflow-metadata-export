@@ -2,9 +2,9 @@
 """
 Export YAML manifest(s) for Airflow DAGs (parsed from ``dags/`` via DagBag).
 
-Single DAG (default file ``dag_a_manifest.yaml`` in repo root):
+Single DAG (writes to ``-o`` path; default if omitted is repo root ``dag_a_manifest.yaml``):
 
-    python scripts/dag_a_manifest.py --dag-id dag_a
+    python scripts/dag_a_manifest.py --dag-id dag_a -o my_dag.yaml
 
 All DAGs that parse successfully (one file per DAG + ``index.yaml``):
 
