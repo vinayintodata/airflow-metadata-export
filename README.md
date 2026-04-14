@@ -21,7 +21,7 @@ Local **Apache Airflow 3** stack (Docker Compose) for development and learning�
 
 - **`docker-compose.yaml`** — Airflow with CeleryExecutor, PostgreSQL, Redis, workers, scheduler, API server (UI on port **8080**).
 - **`dags/`** — DAG definitions.
-- **`scripts/dag_a_manifest.py`** — Optional YAML export of DAG structure, tasks, operator arguments, execution order, and cross-DAG edges.
+- **`scripts/dag_metadata_extract.py`** — Optional YAML export of DAG structure, tasks, operator arguments, execution order, and cross-DAG edges.
 - **`dag_manifests/`** — Example exported YAML (regenerate after you change DAGs).
 - **`config/`** — Airflow config mounted into containers.
 
@@ -69,7 +69,7 @@ docker compose down
 | `data/` | Host folder mounted as `/opt/airflow/data` for shared files between tasks or with the host. |
 | `logs/` | Airflow logs (created by Docker; listed in `.gitignore`). |
 | `config/airflow.cfg` | Custom Airflow configuration. |
-| `scripts/dag_a_manifest.py` | Manifest exporter CLI. |
+| `scripts/dag_metadata_extract.py` | Manifest exporter CLI. |
 | `dag_manifests/` | Generated YAML exports + `index.yaml`. |
 | `docs/MANIFEST.md` | Describes manifest YAML structure and how to read each section. |
 
@@ -95,28 +95,24 @@ Run the script **inside the scheduler container** (the `scripts/` directory is n
 PowerShell:
 
 ```powershell
-Get-Content -Raw scripts\dag_a_manifest.py | docker compose exec -T airflow-scheduler python - --all-dags --output-dir /tmp/dag_manifests
+Get-Content -Raw scripts\dag_metadata_extract.py | docker compose exec -T airflow-scheduler python - --all-dags --output-dir /tmp/dag_manifests
 docker compose cp airflow-scheduler:/tmp/dag_manifests ./dag_manifests
 ```
 
 Bash:
 
 ```bash
-docker compose exec -T airflow-scheduler python - --all-dags --output-dir /tmp/dag_manifests < scripts/dag_a_manifest.py
+docker compose exec -T airflow-scheduler python - --all-dags --output-dir /tmp/dag_manifests < scripts/dag_metadata_extract.py
 docker compose cp airflow-scheduler:/tmp/dag_manifests ./dag_manifests
 ```
 
 **Single DAG** (requires Airflow on the host Python):
 
 ```bash
-python scripts/dag_a_manifest.py --dag-id <dag_id> -o out.yaml
+python scripts/dag_metadata_extract.py --dag-id <dag_id> -o out.yaml
 ```
 
-**Smoke test** (operator args):
-
-```powershell
-Get-Content -Raw scripts\dag_a_manifest.py | docker compose exec -T airflow-scheduler python - --verify
-```
+For more details on running this in Docker, Kubernetes, or via SSH, see **[docs/EXTRACT_SCRIPT.md](docs/EXTRACT_SCRIPT.md)**.
 
 ---
 

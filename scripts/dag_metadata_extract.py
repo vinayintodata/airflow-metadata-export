@@ -2,17 +2,17 @@
 """
 Export YAML manifest(s) for Airflow DAGs (parsed from ``dags/`` via DagBag).
 
-Single DAG (writes to ``-o`` path; default if omitted is repo root ``dag_a_manifest.yaml``):
+Single DAG (writes to ``-o`` path; default if omitted is current directory ``dag_manifest.yaml``):
 
-    python scripts/dag_a_manifest.py --dag-id dag_a -o my_dag.yaml
+    python dag_metadata_extract.py --dag-id my_dag -o my_dag.yaml
 
 All DAGs that parse successfully (one file per DAG + ``index.yaml``):
 
-    python scripts/dag_a_manifest.py --all-dags --output-dir dag_manifests
+    python dag_metadata_extract.py --all-dags --output-dir dag_manifests
 
 Docker (pipe script into scheduler; ``scripts/`` is not mounted by default):
 
-    Get-Content scripts/dag_a_manifest.py | docker compose exec -T airflow-scheduler python - --all-dags --output-dir /tmp/m
+    cat dag_metadata_extract.py | docker compose exec -T airflow-scheduler python - --all-dags --output-dir /tmp/manifests
 """
 
 from __future__ import annotations
@@ -32,13 +32,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-DEFAULT_DAG_ID = "dag_a"
 ROOT_GROUP_KEY = "__root__"
 FORMAT_VERSION = 1
-
-
-def _repo_root() -> Path:
-    return Path(__file__).resolve().parent.parent
 
 
 def _safe_filename(dag_id: str) -> str:
@@ -645,52 +640,6 @@ def export_all_dags(output_dir: Path) -> None:
     print(str(index_path))
 
 
-def verify_operator_call_args(dag_id: str) -> int:
-    _silence_import_noise()
-    _sink = io.StringIO()
-    with contextlib.redirect_stdout(_sink), contextlib.redirect_stderr(_sink):
-        from airflow.models import DagBag
-
-        bag = DagBag(include_examples=False)
-        dag = bag.get_dag(dag_id)
-
-    if dag is None:
-        print(f"FAIL: DAG {dag_id!r} not found", file=sys.stderr)
-        return 1
-
-    td = dag.task_dict
-    required = ("branch_bash_ok", "branch_bash_else", "hello_add")
-    missing = [t for t in required if t not in td]
-    if missing:
-        print(
-            f"FAIL: --verify needs tasks {required}; missing {missing} (try --dag-id dag_a)",
-            file=sys.stderr,
-        )
-        return 1
-
-    try:
-        bash_args = _collect_operator_call_args(td["branch_bash_ok"])
-        assert bash_args is not None, "branch_bash_ok: missing operator_call_args"
-        assert "bash_command" in bash_args, bash_args
-        assert "positive" in str(bash_args["bash_command"]), bash_args["bash_command"]
-
-        bash_else = _collect_operator_call_args(td["branch_bash_else"])
-        assert bash_else and "negative" in str(bash_else.get("bash_command", "")), bash_else
-
-        py_args = _collect_operator_call_args(td["hello_add"])
-        assert py_args is not None, "hello_add: missing operator_call_args"
-        assert py_args.get("op_kwargs") == {"x": 10, "y": 32}, py_args
-    except (AssertionError, KeyError) as exc:
-        print(f"FAIL: {exc}", file=sys.stderr)
-        return 1
-
-    print(
-        "OK: BashOperator bash_command and PythonOperator op_kwargs "
-        "match expectations for this DAG."
-    )
-    return 0
-
-
 def _trim_leading_non_yaml(text: str) -> str:
     lines = text.splitlines()
     for i, line in enumerate(lines):
@@ -721,19 +670,19 @@ def _dump_yaml(data: dict[str, Any]) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Export DAG manifest(s) as YAML")
-    parser.add_argument("--dag-id", default=DEFAULT_DAG_ID, help="DAG id for single export (default: %(default)s)")
+    parser.add_argument("--dag-id", help="DAG id for single export")
     parser.add_argument(
         "--output",
         "-o",
         type=Path,
-        default=_repo_root() / "dag_a_manifest.yaml",
-        help="Output YAML path for single-DAG mode (default: repo root dag_a_manifest.yaml)",
+        default=Path.cwd() / "dag_manifest.yaml",
+        help="Output YAML path for single-DAG mode (default: ./dag_manifest.yaml)",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=_repo_root() / "dag_manifests",
-        help="Directory for --all-dags (default: repo root dag_manifests/)",
+        default=Path.cwd() / "dag_manifests",
+        help="Directory for --all-dags (default: ./dag_manifests/)",
     )
     parser.add_argument(
         "--all-dags",
@@ -745,19 +694,14 @@ def main() -> None:
         action="store_true",
         help="Print YAML to stdout instead of writing a file (single-DAG mode only)",
     )
-    parser.add_argument(
-        "--verify",
-        action="store_true",
-        help="Smoke-test operator_call_args for BashOperator + PythonOperator (no YAML write)",
-    )
     args = parser.parse_args()
-
-    if args.verify:
-        raise SystemExit(verify_operator_call_args(args.dag_id))
 
     if args.all_dags:
         export_all_dags(args.output_dir)
         return
+
+    if not args.dag_id:
+        parser.error("the following arguments are required: --dag-id (unless --all-dags is used)")
 
     manifest = build_manifest(args.dag_id)
     text = _trim_leading_non_yaml(_dump_yaml(manifest))

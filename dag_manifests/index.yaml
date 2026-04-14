@@ -37,29 +37,8 @@ airflow_cli:
     is_paused: 'False'
     bundle_name: dags-folder
     bundle_version: null
-  - dag_id: dag_a
-    fileloc: /opt/airflow/dags/dag_a.py
-    owners:
-    - airflow
-    is_paused: 'False'
-    bundle_name: dags-folder
-    bundle_version: null
   - dag_id: dag_b
     fileloc: /opt/airflow/dags/dag_b.py
-    owners:
-    - airflow
-    is_paused: 'False'
-    bundle_name: dags-folder
-    bundle_version: null
-  - dag_id: dag_b
-    fileloc: /opt/airflow/dags/dag_b.py
-    owners:
-    - airflow
-    is_paused: 'False'
-    bundle_name: dags-folder
-    bundle_version: null
-  - dag_id: dag_c
-    fileloc: /opt/airflow/dags/dag_c.py
     owners:
     - airflow
     is_paused: 'False'
