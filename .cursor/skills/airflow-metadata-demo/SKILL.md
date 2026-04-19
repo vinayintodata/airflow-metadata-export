@@ -1,10 +1,11 @@
 ---
 name: airflow-metadata-demo
 description: >-
-  Works with the airflow_migration demo repository: Airflow 3 Docker Compose stack,
-  DAG manifest YAML export via scripts/dag_metadata_extract.py, and optional
-  DagFactory-style conversion. Use when the user edits DAGs, manifests, docker-compose,
-  or asks how to export metadata, run the stack, or interpret dag_manifests output.
+  Works with the airflow_migration demo: Airflow 3 Docker Compose stack and
+  scripts/dag_metadata_extract.py exporting DAG manifest YAML under dag_manifests/
+  for migration planning. This repo covers export only; reverse-engineering DAGs from
+  manifests lives in a separate codebase. Use when editing DAGs, manifests, compose,
+  or explaining how export fits into Airflow migration.
 ---
 
 # Airflow metadata demo (this repository)
@@ -12,7 +13,9 @@ description: >-
 ## Project purpose
 
 Local **Apache Airflow 3** (Docker Compose) plus a **metadata extractor** that writes
-YAML under `dag_manifests/` describing DAG definitions (tasks, dependencies, operators) for documentation or migration tooling.
+YAML under `dag_manifests/` (definition-time metadata). This repo demonstrates **export**
+for migration workflows; **consumers** that rebuild DAGs from manifests are **out of scope**
+here and belong in another project.
 
 ## Stack commands
 

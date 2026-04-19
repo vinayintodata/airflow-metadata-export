@@ -1,6 +1,6 @@
 # DAG manifest YAML — how to read the files
 
-This guide describes the **YAML files** produced by `scripts/dag_metadata_extract.py` (`--all-dags` or single `--dag-id`). It does not describe Airflow runtime behavior (DagRuns, TaskInstances, logs).
+This guide describes the **YAML files** produced by `scripts/dag_metadata_extract.py` (`--all-dags` or single `--dag-id`). In a **migration** workflow, these files are the **export** artifact; turning them into new DAG code or config is a separate step (another codebase). This guide does not describe Airflow runtime behavior (DagRuns, TaskInstances, logs).
 
 ---
 

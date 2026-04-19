@@ -1,8 +1,10 @@
-# Airflow DAG metadata extractor (demo)
+# Airflow metadata export (demo)
 
-Educational demo: run **Apache Airflow 3** locally with Docker Compose, author DAGs from YAML, and **export structured YAML manifests** that describe each DAG’s tasks, dependencies, and operator configuration—useful for migration planning, documentation, or downstream tooling.
+This repository is a **demo of the export side** of an **Airflow migration** story: you run Airflow locally, point the extractor at your DAG definitions, and produce **structured YAML manifests** (tasks, dependencies, operator arguments, order). That output is the input you would feed into documentation, diffing, or **another codebase** that **reverse-engineers** new DAGs (e.g. YAML or Python for a target Airflow version or environment).
 
-If you know basic **Docker** (start/stop containers), **Python** (run a script), and **Airflow** (what a DAG and task are), you can follow this README end-to-end.
+**Scope here:** export metadata only. **Out of scope for this repo:** generating or rewriting DAG code from manifests—that belongs in a separate project you maintain alongside this one.
+
+If you know basic **Docker**, **Python**, and what a DAG/task are in Airflow, you can follow this README end-to-end.
 
 ---
 
@@ -17,6 +19,15 @@ If you know basic **Docker** (start/stop containers), **Python** (run a script),
 | **`docs/MANIFEST.md`** | Field-by-field reference for the manifest files. |
 
 This is **not** a production deployment template.
+
+### How this fits into migration
+
+| Stage | Typical home | Role |
+|--------|----------------|------|
+| **1. Export** | **This repo** | Run Airflow (or your real environment), run `dag_metadata_extract.py`, get `dag_manifests/*.yaml`. |
+| **2. Transform / codegen** | *Your other project* | Read those manifests and reverse-engineer target DAGs (new operators, layout, or Airflow major version). |
+
+The manifests are a **portable snapshot of definition-time metadata**—they are not a substitute for testing DAGs on the destination cluster.
 
 ---
 
