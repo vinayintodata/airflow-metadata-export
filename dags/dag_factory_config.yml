@@ -1,0 +1,348 @@
+dag_a:
+  default_args:
+    owner: airflow
+    start_date: '2025-01-01T00:00:00+00:00'
+  schedule: '@daily'
+  catchup: false
+  tags:
+  - demo
+  - dependency
+  task_groups:
+    extract:
+      tooltip: 'Task group: extract'
+    transform:
+      tooltip: 'Task group: transform'
+    load:
+      tooltip: 'Task group: load'
+  tasks:
+    start:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+    hello_add:
+      operator: airflow.providers.standard.operators.python.PythonOperator
+      python_callable: include.dag_a_callables.hello_add
+      op_kwargs:
+        x: 10
+        y: 32
+      dependencies:
+      - start
+    branch_on_sum:
+      operator: airflow.providers.standard.operators.python.BranchPythonOperator
+      python_callable: include.dag_a_callables.pick_branch_after_sum
+      dependencies:
+      - hello_add
+    branch_bash_ok:
+      operator: airflow.providers.standard.operators.bash.BashOperator
+      bash_command: 'echo "branch: sum is positive (hello from bash)"'
+      dependencies:
+      - branch_on_sum
+    branch_bash_else:
+      operator: airflow.providers.standard.operators.bash.BashOperator
+      bash_command: 'echo "branch: sum is zero or negative (hello from bash)"'
+      dependencies:
+      - branch_on_sum
+    after_branch_join:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      trigger_rule: none_failed_min_one_success
+      dependencies:
+      - branch_bash_else
+      - branch_bash_ok
+    extract_1:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - after_branch_join
+      task_group_name: extract
+    extract_2:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - extract_1
+      task_group_name: extract
+    extract_3:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - extract_1
+      task_group_name: extract
+    extract_4:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - extract_2
+      - extract_3
+      task_group_name: extract
+    transform_1:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - extract_4
+      task_group_name: transform
+    transform_2:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - transform_1
+      task_group_name: transform
+    transform_3:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - transform_1
+      task_group_name: transform
+    transform_4:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - transform_2
+      - transform_3
+      task_group_name: transform
+    transform_5:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - transform_4
+      task_group_name: transform
+    load_1:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - transform_5
+      task_group_name: load
+    load_2:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - transform_5
+      task_group_name: load
+    load_3:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - load_1
+      - load_2
+      task_group_name: load
+    write_ready_file:
+      operator: airflow.providers.standard.operators.python.PythonOperator
+      python_callable: include.dag_a_callables.write_ready_file
+      op_args:
+      - /opt/airflow/data/from_a/ready.txt
+      dependencies:
+      - load_3
+    a_complete:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - write_ready_file
+dag_b:
+  default_args:
+    owner: airflow
+    start_date: '2025-01-01T00:00:00+00:00'
+  schedule: '@daily'
+  catchup: false
+  tags:
+  - demo
+  - dependency
+  task_groups:
+    stage_1:
+      tooltip: 'Task group: stage_1'
+    stage_2:
+      tooltip: 'Task group: stage_2'
+    stage_3:
+      tooltip: 'Task group: stage_3'
+  tasks:
+    start:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+    s1_1:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - start
+      task_group_name: stage_1
+    s1_2:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s1_1
+      task_group_name: stage_1
+    s1_3:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s1_1
+      task_group_name: stage_1
+    s1_4:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s1_2
+      - s1_3
+      task_group_name: stage_1
+    s2_1:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s1_4
+      task_group_name: stage_2
+    s2_2:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s2_1
+      task_group_name: stage_2
+    s2_3:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s2_1
+      task_group_name: stage_2
+    s2_4:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s2_1
+      task_group_name: stage_2
+    s2_5:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s2_2
+      - s2_3
+      - s2_4
+      task_group_name: stage_2
+    s3_1:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s2_5
+      task_group_name: stage_3
+    s3_2:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s3_1
+      task_group_name: stage_3
+    s3_3:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s3_1
+      task_group_name: stage_3
+    b_complete:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - s3_2
+      - s3_3
+dag_c:
+  default_args:
+    owner: airflow
+    start_date: '2025-01-01T00:00:00+00:00'
+  schedule: '@daily'
+  catchup: false
+  tags:
+  - demo
+  - dependency
+  task_groups:
+    fanout_1:
+      tooltip: 'Task group: fanout_1'
+    processing:
+      tooltip: 'Task group: processing'
+    publish:
+      tooltip: 'Task group: publish'
+  tasks:
+    start:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+    wait_for_dag_a_complete:
+      operator: airflow.providers.standard.sensors.external_task.ExternalTaskSensor
+      external_dag_id: dag_a
+      external_task_id: a_complete
+      mode: reschedule
+      timeout: 21600
+      poke_interval: 30
+      allowed_states:
+      - success
+      failed_states:
+      - failed
+      - skipped
+      - upstream_failed
+      dependencies:
+      - start
+    wait_for_dag_b_complete:
+      operator: airflow.providers.standard.sensors.external_task.ExternalTaskSensor
+      external_dag_id: dag_b
+      external_task_id: b_complete
+      mode: reschedule
+      timeout: 21600
+      poke_interval: 30
+      allowed_states:
+      - success
+      failed_states:
+      - failed
+      - skipped
+      - upstream_failed
+      dependencies:
+      - start
+    wait_for_ready_file_from_a:
+      operator: airflow.providers.standard.sensors.python.PythonSensor
+      python_callable: include.dag_c_callables._ready_file_exists
+      mode: reschedule
+      timeout: 21600
+      poke_interval: 15
+      dependencies:
+      - start
+    f1:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - wait_for_dag_a_complete
+      - wait_for_dag_b_complete
+      - wait_for_ready_file_from_a
+      task_group_name: fanout_1
+    f2:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - f1
+      task_group_name: fanout_1
+    f3:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - f1
+      task_group_name: fanout_1
+    f4:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - f1
+      task_group_name: fanout_1
+    f5:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - f2
+      - f3
+      - f4
+      task_group_name: fanout_1
+    p1:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - f5
+      task_group_name: processing
+    p2:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - p1
+      task_group_name: processing
+    p3:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - p1
+      task_group_name: processing
+    p4:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - p2
+      - p3
+      task_group_name: processing
+    p5:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - p4
+      task_group_name: processing
+    p6:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - p4
+      task_group_name: processing
+    pub1:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - p5
+      - p6
+      task_group_name: publish
+    pub2:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - p5
+      - p6
+      task_group_name: publish
+    pub3:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - pub1
+      - pub2
+      task_group_name: publish
+    c_complete:
+      operator: airflow.providers.standard.operators.empty.EmptyOperator
+      dependencies:
+      - pub3

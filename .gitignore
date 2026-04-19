@@ -9,12 +9,16 @@ venv/
 # Local env / secrets
 .env
 .env.*
+!.env.example
 
 # Airflow runtime logs (Docker bind mount)
 logs/
 
 # Runtime artifact from DAG A
 data/from_a/ready.txt
+
+# Experimental DagFactory converter output (see scripts/convert_manifest_to_dagfactory_yaml.py)
+dag_factory_output/
 
 # Editor
 .idea/

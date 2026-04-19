@@ -1,59 +1,80 @@
-# Airflow migration demo (Docker Compose)
+# Airflow DAG metadata extractor (demo)
 
-Local **Apache Airflow 3** stack (Docker Compose) for development and learning—not production.
+Educational demo: run **Apache Airflow 3** locally with Docker Compose, author DAGs from YAML, and **export structured YAML manifests** that describe each DAG’s tasks, dependencies, and operator configuration—useful for migration planning, documentation, or downstream tooling.
 
----
-
-## Contents
-
-1. [What is in this repo](#what-is-in-this-repo)  
-2. [Requirements](#requirements)  
-3. [Start Airflow](#start-airflow)  
-4. [Project layout](#project-layout)  
-5. [Shared data folder](#shared-data-folder)  
-6. [DAG manifest export](#dag-manifest-export)  
-7. [Manifest YAML reference](docs/MANIFEST.md) (file structure and how to read it)  
-8. [Configuration notes](#configuration-notes)
+If you know basic **Docker** (start/stop containers), **Python** (run a script), and **Airflow** (what a DAG and task are), you can follow this README end-to-end.
 
 ---
 
-## What is in this repo
+## What this repository is
 
-- **`docker-compose.yaml`** — Airflow with CeleryExecutor, PostgreSQL, Redis, workers, scheduler, API server (UI on port **8080**).
-- **`dags/`** — DAG definitions.
-- **`scripts/dag_metadata_extract.py`** — Optional YAML export of DAG structure, tasks, operator arguments, execution order, and cross-DAG edges.
-- **`dag_manifests/`** — Example exported YAML (regenerate after you change DAGs).
-- **`config/`** — Airflow config mounted into containers.
+| Piece | Purpose |
+|--------|---------|
+| **Docker Compose** | PostgreSQL, Redis, Celery worker, scheduler, API server (web UI), and related services—mirrors a small “real” Airflow deployment. |
+| **`dags/dag_factory_loader.py` + `dags/dag_factory_config.yml`** | Defines sample DAGs (`dag_a`, `dag_b`, `dag_c`) from YAML (no hand-written DAG Python files required for the demo). |
+| **`scripts/dag_metadata_extract.py`** | **Metadata extractor**: reads the same DAG definitions Airflow uses and writes **manifest YAML** files. |
+| **`dag_manifests/`** | **Example output** of the extractor (you can regenerate anytime). Re-export after you change DAGs so paths and task metadata stay accurate. |
+| **`docs/MANIFEST.md`** | Field-by-field reference for the manifest files. |
 
----
-
-## Requirements
-
-- **Docker Desktop** (Windows) or Docker Engine + Compose plugin  
-- **Docker Compose v2**
+This is **not** a production deployment template.
 
 ---
 
-## Start Airflow
+## Prerequisites
 
-From the repository root:
+- **Docker Desktop** (Windows) or Docker Engine with the **Compose V2** plugin  
+- About **4 GB RAM** available to Docker (Airflow’s init script warns if lower)
+
+---
+
+## Quick start
+
+### 1. Environment file
+
+Copy the template and set a Fernet key (required by Airflow):
+
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Edit `.env` and replace `FERNET_KEY` with a key you generate:
+
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+Keep `.env` private; it is **gitignored**.
+
+Optional: set `AIRFLOW_HOST_WEB_PORT` (default **8085**) so this stack’s UI does not clash with **another Airflow already using port 8080** on your machine.
+
+### 2. Start Airflow
+
+From the **repository root**:
 
 ```bash
 docker compose up airflow-init
 docker compose up -d
 ```
 
-- First run: `airflow-init` prepares the database.  
-- Then start the stack in the background (`-d`) or omit `-d` to see logs in the terminal.
+- `airflow-init` runs once to migrate the database and create the default admin user.  
+- `docker compose up -d` starts the long-running services in the background.
 
-**Airflow UI**
+### 3. Open the web UI
 
-| Item | Value |
-|------|--------|
-| URL | http://localhost:8080 |
-| Default login | `airflow` / `airflow` (unless changed in `.env`) |
+| | |
+|--|--|
+| **URL** | `http://localhost:8085` (or the port in `AIRFLOW_HOST_WEB_PORT`) |
+| **Default login** | `airflow` / `airflow` (unless you changed `_AIRFLOW_WWW_USER_*` in Compose) |
 
-Stop the stack:
+You should see the demo DAGs plus any **example DAGs** shipped with the Airflow image (examples can be turned off in `config/airflow.cfg` / env if desired).
+
+### 4. Stop the stack
 
 ```bash
 docker compose down
@@ -61,69 +82,105 @@ docker compose down
 
 ---
 
-## Project layout
+## Exporting DAG metadata (main workflow)
 
-| Path | Purpose |
-|------|---------|
-| `dags/` | DAG Python files (mounted to `/opt/airflow/dags`). |
-| `data/` | Host folder mounted as `/opt/airflow/data` for shared files between tasks or with the host. |
-| `logs/` | Airflow logs (created by Docker; listed in `.gitignore`). |
-| `config/airflow.cfg` | Custom Airflow configuration. |
-| `scripts/dag_metadata_extract.py` | Manifest exporter CLI. |
-| `dag_manifests/` | Generated YAML exports + `index.yaml`. |
-| `docs/MANIFEST.md` | Describes manifest YAML structure and how to read each section. |
+The extractor must run in an environment where **Airflow and your `dags/` folder** are available—typically the **scheduler container**.
 
----
+Because `scripts/` is not mounted into the container, **pipe** the script on stdin.
 
-## Shared data folder
-
-| Location | Path |
-|----------|------|
-| On your machine (repo) | under `./data/` |
-| Inside containers | `/opt/airflow/data` |
-
-`docker-compose.yaml` mounts `./data` into Airflow services. Runtime files under `data/` can be gitignored as needed.
-
----
-
-## DAG manifest export
-
-For **what each field means** (`global_topological_order`, `execution_order`, `tasks`, `index.yaml`, etc.), see **[docs/MANIFEST.md](docs/MANIFEST.md)**.
-
-Run the script **inside the scheduler container** (the `scripts/` directory is not mounted by default, so pipe the file in).
-
-PowerShell:
+**PowerShell (Windows):**
 
 ```powershell
 Get-Content -Raw scripts\dag_metadata_extract.py | docker compose exec -T airflow-scheduler python - --all-dags --output-dir /tmp/dag_manifests
 docker compose cp airflow-scheduler:/tmp/dag_manifests ./dag_manifests
 ```
 
-Bash:
+**Bash:**
 
 ```bash
 docker compose exec -T airflow-scheduler python - --all-dags --output-dir /tmp/dag_manifests < scripts/dag_metadata_extract.py
 docker compose cp airflow-scheduler:/tmp/dag_manifests ./dag_manifests
 ```
 
-**Single DAG** (requires Airflow on the host Python):
+**Single DAG** (stdout):
 
 ```bash
-python scripts/dag_metadata_extract.py --dag-id <dag_id> -o out.yaml
+docker compose exec -T airflow-scheduler python - --dag-id dag_a --stdout < scripts/dag_metadata_extract.py > dag_manifests/dag_a.yaml
 ```
 
-For more details on running this in Docker, Kubernetes, or via SSH, see **[docs/EXTRACT_SCRIPT.md](docs/EXTRACT_SCRIPT.md)**.
+### What gets written
+
+| Output | Description |
+|--------|-------------|
+| `dag_manifests/<dag_id>.yaml` | One file per DAG: tasks, dependencies, operator args, topological order, etc. |
+| `dag_manifests/index.yaml` | Only with `--all-dags`: list of exported DAGs and **cross-DAG** edges. |
+
+For **every field name and section**, read **[docs/MANIFEST.md](docs/MANIFEST.md)**.
+
+Other run targets (plain Docker, SSH, Kubernetes) are covered in **[docs/EXTRACT_SCRIPT.md](docs/EXTRACT_SCRIPT.md)**.
 
 ---
 
-## Configuration notes
+## Repository layout
 
-- **`.env`** — Often used for `AIRFLOW_UID`, `FERNET_KEY`, and secrets. Do not commit secrets. `.env` is gitignored.  
-- **`LOAD_EXAMPLES`** — Example DAGs from the Airflow image may appear in the UI; manifests use **`DagBag(include_examples=False)`** so only files under `dags/` are exported.  
-- **Resource usage** — This Compose file runs several services; ensure Docker has enough RAM/CPU.
+```
+.
+├── README.md                 # This file
+├── .env.example            # Template for Docker/Airflow env vars (copy to .env)
+├── docker-compose.yaml       # Airflow 3 stack (CeleryExecutor, Postgres, Redis, …)
+├── config/
+│   └── airflow.cfg           # Mounted into containers
+├── dags/
+│   ├── dag_factory_loader.py # Loads *.yml DAG definitions from this tree
+│   ├── dag_factory_config.yml# Demo DAGs (dag_a, dag_b, dag_c)
+│   └── include/              # Python callables referenced from YAML
+├── plugins/                  # Airflow plugins (empty placeholder)
+├── data/                     # Mounted at /opt/airflow/data (shared files / demos)
+├── scripts/
+│   ├── dag_metadata_extract.py           # Metadata exporter (run inside Airflow)
+│   ├── convert_manifest_to_dagfactory_yaml.py  # Optional / experimental (see below)
+│   └── requirements-scripts.txt          # PyYAML for optional local-only scripts
+├── dag_manifests/            # Example / regenerated manifest YAML + index.yaml
+└── docs/
+    ├── MANIFEST.md           # Manifest schema and field reference
+    └── EXTRACT_SCRIPT.md     # How to run the extractor in Docker, SSH, K8s, etc.
+```
+
+Runtime folders **`logs/`** (task logs) and **`.env`** are gitignored. **`dag_factory_output/`** is gitignored (optional converter output).
+
+---
+
+## Optional: experimental DagFactory converter
+
+The PyPI **`dag-factory`** library is **not** used by the default Compose setup. This repo loads YAML via **`dags/dag_factory_loader.py`**.
+
+For experiments only, `scripts/convert_manifest_to_dagfactory_yaml.py` can turn a per-DAG manifest into DagFactory-style YAML + stub Python. Install dependencies locally:
+
+```bash
+pip install -r scripts/requirements-scripts.txt
+python scripts/convert_manifest_to_dagfactory_yaml.py --help
+```
+
+Output defaults to `dag_factory_output/` (ignored by git).
+
+---
+
+## Troubleshooting
+
+| Issue | What to try |
+|--------|-------------|
+| **Port already in use** | Set `AIRFLOW_HOST_WEB_PORT` in `.env` (e.g. `8085`) and recreate: `docker compose up -d --force-recreate airflow-apiserver` |
+| **Empty or stale `dag_manifests/`** | Re-run the **Exporting** commands after changing DAGs |
+| **Permission / ownership warnings on Linux** | Set `AIRFLOW_UID` in `.env` to your user id (`id -u`) per [Airflow Docker docs](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html) |
+
+---
+
+## Cursor Agent skill
+
+A **Cursor Agent skill** for this repo lives at **`.cursor/skills/airflow-metadata-demo/SKILL.md`**. It summarizes Compose commands, manifest export, and doc locations so assistants stay consistent with this project.
 
 ---
 
 ## License
 
-The included `docker-compose.yaml` header follows the Apache Airflow project license. Your DAGs and scripts are yours to license as you choose.
+The `docker-compose.yaml` header follows the Apache License 2.0 (Airflow upstream). Your DAGs, scripts, and manifests are yours to license separately.

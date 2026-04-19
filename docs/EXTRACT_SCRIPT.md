@@ -2,7 +2,9 @@
 
 The `dag_metadata_extract.py` script is designed to be highly portable. It does not need to be permanently installed or committed to your Airflow environment's repository. You can execute it on the fly across different hosting environments.
 
-This guide explains how to run the extractor on various systems.
+**Start with the repository [README](../README.md)** for the full quick start, layout, and how manifests fit into the demo.
+
+This guide explains how to run the extractor on various systems. For **this repo’s Docker Compose** stack, prefer **`docker compose exec -T airflow-scheduler`** (see section 1 below) and copy results with **`docker compose cp`**.
 
 ---
 

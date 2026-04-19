@@ -1,0 +1,2 @@
+# Optional: run scripts locally (outside Docker) — e.g. convert_manifest_to_dagfactory_yaml.py
+PyYAML>=6.0
