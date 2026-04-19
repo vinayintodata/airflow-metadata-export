@@ -85,6 +85,22 @@ docker compose up -d
 
 You should see the demo DAGs plus any **example DAGs** shipped with the Airflow image (examples can be turned off in `config/airflow.cfg` / env if desired).
 
+#### Screenshots (Graph view)
+
+Static captures from the **Graph** tab for each demo DAG:
+
+**`dag_a`**
+
+![Graph view for dag_a](images/dag_a-graph.png)
+
+**`dag_b`**
+
+![Graph view for dag_b](images/dag_b-graph.png)
+
+**`dag_c`**
+
+![Graph view for dag_c](images/dag_c-graph.png)
+
 ### 4. Stop the stack
 
 ```bash
@@ -138,6 +154,7 @@ Other run targets (plain Docker, SSH, Kubernetes) are covered in **[docs/EXTRACT
 .
 ├── README.md                 # This file
 ├── .env.example            # Template for Docker/Airflow env vars (copy to .env)
+├── images/                   # DAG graph screenshots (used in this README)
 ├── docker-compose.yaml       # Airflow 3 stack (CeleryExecutor, Postgres, Redis, …)
 ├── config/
 │   └── airflow.cfg           # Mounted into containers
